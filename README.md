@@ -1,6 +1,6 @@
 # API Badminton
 
-**Projet réalisé par Prince et Tom**
+**Projet réalisé par Tom et Prince **
 
 ## Table des matières
 
