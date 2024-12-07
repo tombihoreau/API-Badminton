@@ -41,7 +41,7 @@ Ce projet est une API RESTful permettant de gérer un système de réservation d
 5. Lancez le serveur de développement :
 
    ```bash
-   npm run dev
+   node app.js
    ```
 6. L'API sera disponible à l'adresse [http://localhost:3000](http://localhost:3000).
 
