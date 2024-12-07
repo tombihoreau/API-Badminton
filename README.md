@@ -64,9 +64,12 @@ Ce projet est une API RESTful permettant de gérer un système de réservation d
 
 #### Ressources principales
 
-
 #### Exemples d'EndPoints :
 
+* **GET /terrains** : Récupérer la liste des terrains disponibles.
+* **POST /reservations** : Créer une nouvelle réservation.
+* **DELETE /reservations/:id** : Annuler une réservation.
+* **PUT /terrains/:id/indisponible** : Rendre un terrain indisponible.
 
 ### API GraphQL
 
@@ -89,5 +92,5 @@ Permet de récupérer les créneaux horaires disponibles pour un terrain spécif
 
 ## Contributeurs
 
-* **Tom** BIHOREAU
+* **Tom BIHOREAU**
 * **Prince de Gloire ONDONGO**
