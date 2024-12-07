@@ -4,7 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config()
-
+const sequelize = require('./database/sequelize'); 
 //Importer les routers
 
 
@@ -37,7 +37,15 @@ if (process.env && process.env.ENV == 'dev') {
 }
 
 
-//Ajouter Allow-Cross-Origin-Ressource
+sequelize.authenticate()
+  .then(() => console.log('La connexion à la base de données a réussi !'))
+  .catch((err) => console.error('mpossible de se connecter à la base de données:', err));
+
+
+app.get('/', (req, res) => {
+  res.json({ message: 'Bienvenue sur l\'API Badminton!' });
+});
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -54,5 +62,15 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.send('Error');
 });
+
+
+
+
+var port = process.env.HOST_PORT_API || 3002; 
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+
 
 module.exports = app;
