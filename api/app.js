@@ -6,6 +6,7 @@ var logger = require('morgan');
 require('dotenv').config()
 const sequelize = require('./database/sequelize'); 
 //Importer les routers
+const routerAuth = require('./routes/authentification');
 
 
 var app = express();
@@ -45,6 +46,8 @@ sequelize.authenticate()
 app.get('/', (req, res) => {
   res.json({ message: 'Bienvenue sur l\'API Badminton!' });
 });
+
+app.use(routerAuth);
 
 
 // catch 404 and forward to error handler
