@@ -19,7 +19,10 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
-    command: ["npx", "nodemon", "./bin/www"]
+    command: ["sh", "-c", "sleep 5 && npx sequelize-cli db:migrate && npx nodemon ./bin/www"]
+    volumes:
+      - ./config:/usr/src/app/config
+      - .:/usr/src/app
 
   # La base de données MySQL
   db:
@@ -33,7 +36,6 @@ services:
       - MYSQL_PASSWORD=password
       - MYSQL_ROOT_PASSWORD=root
     volumes:
-      - ./init/:/docker-entrypoint-initdb.d/
       - ./dbdata:/var/lib/mysql
     ports:
       - "${HOST_PORT_DB}:3306"
