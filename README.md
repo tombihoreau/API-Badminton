@@ -7,7 +7,7 @@
 1. [Introduction](#introduction "introduction")
 2. [Prérequis](#Prérequis "Prérequis")
 3. [Installation](#installation "installation")
-4. [Ressources](#ressouces "ressources")
+4. [Ressources](#ressources "ressources")
 5. [Utiliser le service :  cas nominal](#utilisation)
 6. [Conception](#conception)
 7. [Sécurité](#Sécurité)
@@ -123,7 +123,7 @@ Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéd
 | Rendre terrain indispo  | `/terrains/{id}/unavailable` | `PATCH`      | `{id}` : Identifiant du terrain (A, B, C, D)          | Administrateur·ice              | Rend un terrain indisponible pour une période donnée. Protégé par authentification.  |
 | Liste des réservations |       `/reservations`       | `GET`        | `date` (optionnel), `terrain` (optionnel)           | Administrateur·ice, utilisateur | Permet de lister les réservations existantes.                                           |
 
-## Utiliser le service :  cas nominal
+## Utiliser le service :  cas nominal {utilisation}
 
 #### Étapes pour utiliser le service :
 
@@ -237,6 +237,53 @@ Permet de récupérer les créneaux horaires disponibles pour un terrain spécif
    ```
 
 ## Sécurité
+
+##### 1. Authentification par JWT (JSON Web Token)
+
+L'authentification pour les actions sensibles (comme rendre un terrain indisponible) est protégée par un système de JWT. Un administrateur doit se connecter avec un pseudo et un mot de passe spécifiques. Une fois authentifié, l'administrateur reçoit un jeton JWT qui permet d'accéder aux ressources protégées.
+Ce jeton est inclus dans les en-têtes des requêtes pour garantir que seul l'administrateur peut effectuer certaines actions.
+
+##### 2. Génération de clé secrète forte pour JWT
+
+Une clé secrète forte est utilisée pour signer les JSON Web Tokens (JWT). Cette clé est conservée de manière sécurisée et n'est jamais exposée. Elle est utilisée pour garantir l'intégrité et la validité des jetons JWT émis lors de l'authentification de l'administrateur.
+
+##### 3. Protection des endpoints sensibles
+
+Les routes protégées par des actions administratives (comme rendre un terrain indisponible) sont uniquement accessibles par des utilisateurs authentifiés. Cela empêche les utilisateurs non autorisés de modifier l'état du système.
+
+##### 4. Vérification des entrées utilisateur
+
+Pour éviter les attaques par injection SQL ou autres types de manipulation de données, toutes les données envoyées par les utilisateurs sont soigneusement vérifiées et validées avant d'être traitées.Par exemple :
+
+- Le pseudo de l'utilisateur est validé avant d'être utilisé dans une réservation.
+- Les dates et heures sont également vérifiées pour s'assurer qu'elles respectent les formats attendus.
+
+##### 5. Gestion des permissions
+
+Les utilisateurs normaux ne peuvent pas accéder aux actions administratives.
+Par exemple, la réservation d'un terrain est autorisée pour tous les utilisateurs, mais seule l'administrateur peut rendre un terrain indisponible. Cela garantit que les actions sensibles sont réservées à des personnes spécifiquement autorisées.
+
+##### 6. Chiffrement des mots de passe
+
+Les mots de passe sont stockés de manière sécurisée (hachés et salés) dans la base de données. Même si la base de données est compromise, les mots de passe restent protégés.
+
+## Remarques
+
+## Réferences
+
+* **Documentation officielle de** [Node.js](https://nodejs.org/) - Documentation officielle pour Node.js.
+* **OpenAPI Specification** - Spécification standard pour la description d'API RESTful.
+* **Tutoriels de** [Sequelize](https://sequelize.org/) **pour l’ORM** - Tutoriels pour l'utilisation de Sequelize, un ORM pour Node.js.
+* **JWT.io** : [https://jwt.io/](https://jwt.io/) - Documentation sur l'utilisation des JSON Web Tokens.
+* **Express.js documentation** : [https://expressjs.com/](https://expressjs.com/) - Documentation pour le framework Node.js, utile pour implémenter des API REST sécurisées.
+* **MDN Web Docs** : [https://developer.mozilla.org/](https://developer.mozilla.org/) - Pour des exemples sur l’utilisation des requêtes HTTP et la gestion des API.
+* **RESTful API Design** : [https://www.restapitutorial.com/](https://www.restapitutorial.com/) - Un tutoriel détaillé sur la conception d'API REST.
+* **Docker Documentation** : [https://docs.docker.com/](https://docs.docker.com/) - Documentation officielle sur Docker, un outil permettant de conteneuriser les applications pour une gestion plus simple des environnements.
+* **Protection contre les attaques par force brute** : Implémentation de stratégies pour sécuriser les logins et prévenir les attaques par force brute. [OWASP Brute Force Protection]()
+* **Rate Limiting** : Mise en œuvre de la limitation du taux de requêtes pour éviter les abus et protéger les ressources des serveurs. [Express-rate-limit](https://www.npmjs.com/package/express-rate-limit) pour Node.js.
+* **White-list / Black-list** : Implémentation de listes blanches et noires pour contrôler l'accès aux ressources, en autorisant uniquement certaines adresses IP ou utilisateurs.
+* **Gestion des Secrets / Variables d’Environnement** : Pour une gestion sécurisée des variables d'environnement et des secrets dans des applications Node.js. Utilisation d'outils comme [dotenv](https://www.npmjs.com/package/dotenv) et [Vault]().
+* **Node.js Process Management** : Gestion des processus Node.js via des outils comme [PM2](), un gestionnaire de processus permettant de maintenir les applications Node en fonctionnement continu, même après un crash.
 
 ## Contributeurs
 
