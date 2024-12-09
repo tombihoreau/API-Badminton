@@ -2,7 +2,7 @@ services:
   # La web API (Node.js)
   api:
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile
     restart: always
     labels:
