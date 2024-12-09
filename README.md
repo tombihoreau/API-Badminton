@@ -7,7 +7,7 @@
 1. [Introduction](#introduction "introduction")
 2. [Prérequis](#Prérequis "Prérequis")
 3. [Installation](#installation "installation")
-4. [Ressources](#Ressources "installation")
+4. [Ressources](#ressouces "ressources")
 5. [Utiliser le service :  cas nominal](#utilisation)
 6. [Conception](#conception)
 7. [Sécurité](#Sécurité)
@@ -112,7 +112,7 @@ Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéd
 
   Avec ces informations, vous pourrez gérer et interagir avec votre base de données MySQL directement depuis Adminer.
 
-## Ressources {#Ressources}
+## Ressources
 
 | Ressource               |              URL              | Méthodes HTTP | Paramètres d’URL/Variations                           | Qui peut faire ça               | Commentaires                                                                             |
 | ----------------------- | :----------------------------: | -------------- | ------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -206,7 +206,7 @@ Exemple :
 Envoyer une requête `DELETE` à l'URL `/reservations/{reservation_id}`.
 Remplacez `{reservation_id}` par l'ID de la réservation à annuler.
 
-## Conception {#conception}
+## Conception
 
 ### API RESTful
 
@@ -236,7 +236,7 @@ Permet de récupérer les créneaux horaires disponibles pour un terrain spécif
    }
    ```
 
-## Sécurité {#sécurité}
+## Sécurité
 
 ## Contributeurs
 
