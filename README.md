@@ -7,10 +7,13 @@
 1. [Introduction](#introduction "introduction")
 2. [Prérequis](#Prérequis "Prérequis")
 3. [Installation](#installation "installation")
-4. [Utilisation](#utilisation)
-5. [API (REST et GraphQL)](#api-rest-et-graphql)
-6. [Cas d&#39;utilisation](#cas-dutilisation)
-7. [Contributeurs](#contributeurs)
+4. [Ressources](#installation "installation")
+5. [Utiliser le service :  cas nominal](#utilisation)
+6. [Conception](#conception)
+7. [Sécurité](#Sécurité)
+8. [Remarques ](#Remarques)
+9. [Références](#Références)
+10. [Contributeurs](#contributeurs)
 
 ## Introduction
 
@@ -91,7 +94,6 @@ docker-compose down
 
 ```
 
-
 6. **Accès à l'application:**
 
 Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéder aux différents services comme suit :
@@ -101,7 +103,7 @@ Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéd
 
 7. **Connexion à Adminer:**
 
-    Pour vous connecter à la base de données MySQL via Adminer, entrez les informations suivantes dans le formulaire de conn
+   Pour vous connecter à la base de données MySQL via Adminer, entrez les informations suivantes dans le formulaire de conn
 
 - **Serveur** : `db` (nom du service dans Docker Compose)
 - **Nom d'utilisateur** : `user`
@@ -110,20 +112,101 @@ Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéd
 
   Avec ces informations, vous pourrez gérer et interagir avec votre base de données MySQL directement depuis Adminer.
 
-## Utilisation
+## Ressources
 
-1. **Effectuer une réservation** :
-   Pour effectuer une réservation, envoyez une requête `POST` à `/reservations` avec les informations suivantes :
+| Ressource               |              URL              | Méthodes HTTP | Paramètres d’URL/Variations                           | Qui peut faire ça               | Commentaires                                                                             |
+| ----------------------- | :----------------------------: | -------------- | ------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- |
+| Authentification        |        `/auth/login`        | `POST`       | Aucune                                                  | Administrateur·ice              | Permet à un administrateur·ice de se connecter pour gérer les ressources protégées. |
+| Liste des créneaux     |      `/slots/available`      | `GET`        | `date` (ex. `2024-11-27`), `terrain` (A, B, C, D) | Tout utilisateur                 | Récupère les créneaux disponibles pour une date et un terrain spécifiques.           |
+| Réservation            |       `/reservations`       | `POST`       | Aucune                                                  | Tout utilisateur                 | Permet de créer une réservation en fournissant un pseudo et les détails du créneau.  |
+| Annulation              |     `/reservations/{id}`     | `DELETE`     | `{id}` : Identifiant unique de la réservation        | Tout utilisateur                 | Permet d'annuler une réservation existante.                                             |
+| Rendre terrain indispo  | `/terrains/{id}/unavailable` | `PATCH`      | `{id}` : Identifiant du terrain (A, B, C, D)          | Administrateur·ice              | Rend un terrain indisponible pour une période donnée. Protégé par authentification.  |
+| Liste des réservations |       `/reservations`       | `GET`        | `date` (optionnel), `terrain` (optionnel)           | Administrateur·ice, utilisateur | Permet de lister les réservations existantes.                                           |
+
+## Utiliser le service :  cas nominal
+
+#### Étapes pour utiliser le service :
+
+1. **Créer un utilisateur :**
+   Envoyer une requête `POST` à l'URL `/users` avec un pseudo dans le corps de la requête pour s'inscrire.
+   Exemple de payload JSON :
    ```json
    {
-       "date": "2024-11-27",
-       "time": "14:00",
-       "terrain": "A",
-       "pseudo": "JohnDoe"
+       "username": "paul_player1"
    }
    ```
 
-## API (REST et GraphQL)
+ Réponse attendue :
+
+```json
+{
+    "id": 1,
+    "username": "player1"
+}
+```
+
+**2. Se connecter en tant qu'administrateur**
+
+Envoyer une requête `POST` à l'URL `/auth/login` avec les identifiants d'administrateur.
+
+**Exemple de requête :**
+
+```json
+{
+    "username": "admybad",
+    "password": "astrongpassword."
+}
+```
+
+Réponse attendue :
+
+```json
+{
+    "access_token": "<JWT_TOKEN>"
+}
+```
+
+3. **Lister les créneaux disponibles :**
+
+   Envoyer une requête `GET` à l'URL `/slots/available?date=2024-11-27&terrain=A`.
+
+Réponse attendue :
+
+```json
+[
+    {
+        "time": "10:00",
+        "isAvailable": true
+    },
+    {
+        "time": "10:45",
+        "isAvailable": false
+    }
+]
+
+```
+
+**4 . Réserver un terrain :**
+
+Envoyer une requête `POST` à l'URL `/reservations` avec les informations nécessaires.
+
+Exemple :
+
+```json
+{
+    "username": "player1",
+    "date": "2024-11-27",
+    "terrain": "A",
+    "time": "10:00"
+}
+```
+
+**5 . Annuler une réservation :**
+
+Envoyer une requête `DELETE` à l'URL `/reservations/{reservation_id}`.
+Remplacez `{reservation_id}` par l'ID de la réservation à annuler.
+
+## Conception {#conception}
 
 ### API RESTful
 
@@ -153,7 +236,7 @@ Permet de récupérer les créneaux horaires disponibles pour un terrain spécif
    }
    ```
 
-## Cas d'utilisation
+## Sécurité {#sécurité}
 
 ## Contributeurs
 
