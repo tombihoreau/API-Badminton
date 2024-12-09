@@ -53,24 +53,23 @@ Avant de commencer, assurez-vous que Docker et Docker Compose sont installés su
    HOST_PORT_API=3001
    HOST_PORT_DB=3306
    HOST_PORT_ADMINER=8080
+
+   # Configuration de la base de données
+   DB_NAME=mydb
+   DB_USER=user
+   DB_PASSWORD=password
+   DB_HOST=db
+   DB_PORT=3306
+   DB_ROOT_PASSWORD=root
    ```
+4. **Générer la clé privé**
 
-   ###### - Variables d'environnement pour la configuration de la base de données
+   ```bash
+   # Générer une clé privé 
 
-   Le fichier `.env` dans le répertoire `api` doit contenir la configuration de la base de données :
-
-```bash
-# Configuration de la base de données
-DB_NAME=mydb
-DB_USER=user
-DB_PASSWORD=password
-DB_HOST=db
-DB_PORT=3306
-DB_ROOT_PASSWORD=root
-```
-
-
-4. **Construisez et lancez les conteneurs Docker :**
+   node generatekey
+   ```
+5. **Construisez et lancez les conteneurs Docker :**
 
 ```bash
 
@@ -92,16 +91,17 @@ docker-compose down
 
 ```
 
-5. **Accès à l'application**
 
-   Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéder aux différents services comme suit :
+6. **Accès à l'application:**
+
+Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéder aux différents services comme suit :
 
 - **API** : L'API sera disponible à l'adresse [http://localhost:3000](http://localhost:3000).
 - **Adminer** : Adminer, une interface web pour gérer la base de données, sera disponible à l'adresse [http://localhost:8080](http://localhost:8080)
 
-6. **Connexion à Adminer**
+7. **Connexion à Adminer:**
 
-   Pour vous connecter à la base de données MySQL via Adminer, entrez les informations suivantes dans le formulaire de connexion :
+    Pour vous connecter à la base de données MySQL via Adminer, entrez les informations suivantes dans le formulaire de conn
 
 - **Serveur** : `db` (nom du service dans Docker Compose)
 - **Nom d'utilisateur** : `user`
