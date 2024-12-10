@@ -5,14 +5,14 @@
 ## Table des matières
 
 1. [Introduction](#introduction "introduction")
-2. [Prérequis](#Prérequis "Prérequis")
+2. [Prérequis](#prérequis "Prérequis")
 3. [Installation](#installation "installation")
 4. [Ressources](#ressources "ressources")
-5. [Utiliser le service :  cas nominal](#utilisation)
+5. [Utiliser le service :  cas nominal](#utiliser-le-service---cas-nominal-utilisation)
 6. [Conception](#conception)
-7. [Sécurité](#Sécurité)
-8. [Remarques ](#Remarques)
-9. [Références](#Références)
+7. [Sécurité](#sécurité)
+8. [Remarques ](#remarques)
+9. [Références](#réferences)
 10. [Contributeurs](#contributeurs)
 
 ## Introduction
@@ -123,31 +123,17 @@ Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéd
 | Rendre terrain indispo  | `/terrains/{id}/unavailable` | `PATCH`      | `{id}` : Identifiant du terrain (A, B, C, D)          | Administrateur·ice              | Rend un terrain indisponible pour une période donnée. Protégé par authentification.  |
 | Liste des réservations |       `/reservations`       | `GET`        | `date` (optionnel), `terrain` (optionnel)           | Administrateur·ice, utilisateur | Permet de lister les réservations existantes.                                           |
 
-## Utiliser le service :  cas nominal {utilisation}
+## Utiliser le service :  cas nominal
 
-#### Étapes pour utiliser le service :
+##### **Cas Nominal pour l'Administrateur**
 
-1. **Créer un utilisateur :**
-   Envoyer une requête `POST` à l'URL `/users` avec un pseudo dans le corps de la requête pour s'inscrire.
-   Exemple de payload JSON :
-   ```json
-   {
-       "username": "paul_player1"
-   }
-   ```
+###### 1. **Authentification en tant qu'Administrateur**
 
- Réponse attendue :
-
-```json
-{
-    "id": 1,
-    "username": "player1"
-}
-```
-
-**2. Se connecter en tant qu'administrateur**
-
-Envoyer une requête `POST` à l'URL `/auth/login` avec les identifiants d'administrateur.
+* **But** : Se connecter à l'interface administrateur avec les identifiants réservés.
+* **Préconditions** : L'admin doit connaître son pseudo et mot de passe.
+* **Étapes** :
+  1. L'administrateur envoie une requête `POST` à l'URL `/auth/login` avec les identifiants.
+  2. L'API renvoie un `JWT_TOKEN` pour authentifier l'administrateur.
 
 **Exemple de requête :**
 
@@ -158,7 +144,7 @@ Envoyer une requête `POST` à l'URL `/auth/login` avec les identifiants d'admin
 }
 ```
 
-Réponse attendue :
+**Réponse attendue :**
 
 ```json
 {
@@ -166,11 +152,45 @@ Réponse attendue :
 }
 ```
 
-3. **Lister les créneaux disponibles :**
+**2. Rendre un terrain indisponible**
 
-   Envoyer une requête `GET` à l'URL `/slots/available?date=2024-11-27&terrain=A`.
+* **But** : Rendre un terrain temporairement indisponible pour les réservations (par exemple, terrain B).
+* **Préconditions** : L'administrateur doit être connecté avec le token d'authentification.
+* **Étapes** :
 
-Réponse attendue :
+  1. L'administrateur envoie une requête `POST` à l'URL `/terrain/{terrain}/indisponible` pour mettre un terrain en mode indisponible.
+  2. Le terrain sélectionné devient indisponible pour toute nouvelle réservation.
+
+**Exemple de requête :**
+
+```json
+{
+    "terrain": "B"
+}
+```
+
+**Réponse attendue :**
+
+```json
+{
+    "message": "Le terrain B est maintenant indisponible."
+}
+```
+
+##### Cas Nominal pour un utilisateur normal
+
+**1. Lister les créneaux disponibles d'un terrain :**
+
+Envoyer une requête `GET` à l'URL `/slots/available?date=2024-11-27&terrain=A`.
+
+```bash
+#les paramètres à utiliser sont :
+
+#======= date
+#======= terrain
+```
+
+**Réponse attendue :**
 
 ```json
 [
@@ -186,11 +206,11 @@ Réponse attendue :
 
 ```
 
-**4 . Réserver un terrain :**
+**2. Réserver un terrain :**
 
 Envoyer une requête `POST` à l'URL `/reservations` avec les informations nécessaires.
 
-Exemple :
+**Exemple :**
 
 ```json
 {
@@ -201,40 +221,76 @@ Exemple :
 }
 ```
 
+**Réponse attendue :**
+
+```json
+{
+    "message": "Réservation réussie pour le terrain A le 27 novembre 2024 à 10h00."
+}
+```
+
 **5 . Annuler une réservation :**
 
-Envoyer une requête `DELETE` à l'URL `/reservations/{reservation_id}`.
-Remplacez `{reservation_id}` par l'ID de la réservation à annuler.
+* **But** : Annuler une réservation existante.
+* **Préconditions** : L'utilisateur doit disposer d'une réservation à annuler.
+* **Étapes** :
+
+  1. L'utilisateur envoie une requête `DELETE` à l'URL `/reservations/{reservation_id}` avec l'ID de la réservation à annuler.
+  2. L'API confirme l'annulation.
+
+**Exemple :**
+
+```json
+{
+    "reservation_id": 1
+}
+```
+
+Réponse attendue
+
+```json
+{
+    "message": "La réservation a été annulée avec succès."
+}
+```
 
 ## Conception
 
-### API RESTful
+#### Dictionnaire des données
 
-#### Ressources principales
+| **Nom de la donnée** | **Type**    | **Description**                                                                | **Contraintes**                                                          |
+| --------------------------- | ----------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| **username**          | `string`        | Le pseudo de l'utilisateur ou de l'administrateur.                                   | Obligatoire pour s'identifier. Longueur entre 3 et 20 caractères.             |
+| **password**          | `string`        | Le mot de passe de l'utilisateur ou administrateur (lors de la connexion).           | Obligatoire lors de la connexion, doit être sécurisé.                       |
+| **date**              | `string` (date) | La date de la réservation ou de la disponibilité.                                  | Doit être au format `YYYY-MM-DD`.                                           |
+| **terrain**           | `string`        | Le nom du terrain réservé ou à rendre indisponible.                               | Doit être une des valeurs suivantes :`A`, `B`, `C`, `D`.              |
+| **time**              | `string` (time) | L'heure du créneau réservé.                                                       | Doit être au format `HH:mm`.                                                |
+| **reservation_id**    | `integer`       | L'identifiant de la réservation.                                                    | Doit être unique pour chaque réservation.                                    |
+| **access_token**      | `string`        | Le jeton JWT utilisé pour authentifier un administrateur.                           | Obligatoire pour les actions administratives, valide pendant un certain temps. |
+| **isAvailable**       | `boolean`       | Indique si un créneau est disponible ou non.                                        | `true` si disponible, `false` si non.                                      |
+| **terrainStatus**     | `string`        | L'état d'un terrain : disponible, indisponible.                                     | Peut être `available` ou `unavailable`.                                   |
+| **createdAt**         | `datetime`      | Date et heure de la création de la réservation ou de la modification d'un terrain. | Automatiquement généré par le système lors de la création.                |
+| **updatedAt**         | `datetime`      | Date et heure de la dernière modification.                                          | Automatiquement généré par le système lors de la modification.             |
 
-#### Exemples d'EndPoints :
+---
 
-* **GET /terrains** : Récupérer la liste des terrains disponibles.
-* **POST /reservations** : Créer une nouvelle réservation.
-* **DELETE /reservations/:id** : Annuler une réservation.
-* **PUT /terrains/:id/indisponible** : Rendre un terrain indisponible.
+#### Explication des colonnes :
 
-### API GraphQL
+- **Nom de la donnée** : Le nom de la donnée ou du champ dans la base de données ou dans l'API.
+- **Type** : Le type de la donnée, comme `string`, `boolean`, `integer`, `datetime`, etc.
+- **Description** : Une brève description du rôle ou de l'objectif de la donnée dans l'API ou le système.
+- **Contraintes** : Les restrictions, règles ou formats que la donnée doit respecter pour être valide. Cela inclut des informations sur la longueur des chaînes de caractères, le format des dates, ou des valeurs acceptées.
 
-#### Requête GraphQL : `GetAvailableSlots`
+#### Tableau récapitulatif
 
-Permet de récupérer les créneaux horaires disponibles pour un terrain spécifique à une date donnée.
-
-1. **Effectuer une réservation** :
-   Pour effectuer une réservation, envoyez une requête `POST` à `/reservations` avec les informations suivantes :
-   ```json
-   {
-       "date": "2024-11-27",
-       "time": "14:00",
-       "terrain": "A",
-       "pseudo": "JohnDoe"
-   }
-   ```
+| Ressource               |              URL              | Méthodes HTTP | Paramètres d’URL/Variations                           | Qui peut faire ça               | Commentaires                                                                             |
+| ----------------------- | :----------------------------: | -------------- | ------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- |
+| Authentification        |        `/auth/login`        | `POST`       | Aucune                                                  | Administrateur·ice              | Permet à un administrateur·ice de se connecter pour gérer les ressources protégées. |
+| Liste des créneaux     |      `/slots/available`      | `GET`        | `date` (ex. `2024-11-27`), `terrain` (A, B, C, D) | Tout utilisateur                 | Récupère les créneaux disponibles pour une date et un terrain spécifiques.           |
+| Réservation            |       `/reservations`       | `POST`       | Aucune                                                  | Tout utilisateur                 | Permet de créer une réservation en fournissant un pseudo et les détails du créneau.  |
+| Annulation              |     `/reservations/{id}`     | `DELETE`     | `{id}` : Identifiant unique de la réservation        | Tout utilisateur                 | Permet d'annuler une réservation existante.                                             |
+| Rendre terrain indispo  | `/terrains/{id}/unavailable` | `PATCH`      | `{id}` : Identifiant du terrain (A, B, C, D)          | Administrateur·ice              | Rend un terrain indisponible pour une période donnée. Protégé par authentification.  |
+| Liste des réservations |       `/reservations`       | `GET`        | `date` (optionnel), `terrain` (optionnel)           | Administrateur·ice, utilisateur | Permet de lister les réservations existantes.                                           |
 
 ## Sécurité
 
@@ -268,6 +324,9 @@ Par exemple, la réservation d'un terrain est autorisée pour tous les utilisate
 Les mots de passe sont stockés de manière sécurisée (hachés et salés) dans la base de données. Même si la base de données est compromise, les mots de passe restent protégés.
 
 ## Remarques
+
+* La principale difficulté rencontrée lors de la conception du système a été de gérer la logique d'indisponibilité temporaire des terrains. Il est essentiel de s'assurer que la gestion de l'indisponibilité ne bloque pas les utilisateurs qui pourraient vouloir réserver d'autres terrains.
+* L'utilisation de JWT pour sécuriser les ressources et contrôler l'accès a été une solution adéquate pour gérer l'authentification et les permissions d'accès aux différentes ressources.
 
 ## Réferences
 
