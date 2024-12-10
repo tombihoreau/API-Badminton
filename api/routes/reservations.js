@@ -6,10 +6,11 @@ const {
   mapReservationResourceObject,
   mapUserReservationsResourceObject,
 } = require("../hal");
-const baseURL = `${req.protocol}://${req.get("host")}`;
+
 
 // Voir les réservations pour un utilisateur
 router.get("/users/:userId/reservations", async (req, res) => {
+  const baseURL = `${req.protocol}://${req.get("host")}`;
   try {
     const { userId } = req.query;
     const reservations = await Reservation.findAll({ where: { userId } });
@@ -26,6 +27,7 @@ router.get("/users/:userId/reservations", async (req, res) => {
 
 // Créer une réservation
 router.post("/reservations", async (req, res) => {
+  const baseURL = `${req.protocol}://${req.get("host")}`;
   try {
     const { userId, slotId, date } = req.body;
 

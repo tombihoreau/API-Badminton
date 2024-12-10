@@ -6,9 +6,10 @@ const {
   mapSlotResourceObject,
 } = require('../hal');
 
-const baseURL = `${req.protocol}://${req.get("host")}`;
+
 // Lister tous les terrains
 router.get("/fields", async (req, res) => {
+  const baseURL = `${req.protocol}://${req.get("host")}`;
   try {
     const fields = await Field.findAll();
     const fieldResources = fields.map((field) =>
@@ -22,6 +23,7 @@ router.get("/fields", async (req, res) => {
 
 // Voir les créneaux disponibles pour un terrain
 router.get("/fields/:id/slots", async (req, res) => {
+  const baseURL = `${req.protocol}://${req.get("host")}`;
   try {
     const slots = await Slot.findAll({
       where: { fieldId: req.params.id, isAvailable: true },
@@ -46,8 +48,24 @@ router.get("/fields/:id/slots", async (req, res) => {
   }
 }); */
 
+// Voir les détails d'un terrain
+router.get("/fields/:id", async (req, res) => {
+  const baseURL = `${req.protocol}://${req.get("host")}`;
+  try {
+    const field = await Field.findByPk(req.params.id);
+    if (!field) {
+      return res.status(404).json({ error: "Terrain non trouvé" });
+    }
+    const fieldResource = mapFieldResourceObject(field, baseURL);
+    res.status(200).json(fieldResource);
+  } catch (err) {
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 // Modifier un terrain (Admin)
 router.patch("/fields/:id", async (req, res) => {
+  const baseURL = `${req.protocol}://${req.get("host")}`;
   try {
     const { available, reasonUnavailable } = req.body;
     const field = await Field.findByPk(req.params.id);
