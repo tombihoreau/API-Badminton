@@ -2,7 +2,7 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Courts', {
+    await queryInterface.createTable('Fields', {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -11,12 +11,15 @@ module.exports = {
       name: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true, 
       },
-      isAvailable: {
+      available: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        defaultValue: true, 
+        defaultValue: true,
+      },
+      reasonUnavailable: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -32,6 +35,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Courts');
+    await queryInterface.dropTable('Fields');
   },
 };

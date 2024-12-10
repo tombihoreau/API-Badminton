@@ -11,11 +11,19 @@ module.exports = {
       pseudo: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
+        unique: true, 
       },
       password: {
         type: Sequelize.STRING,
-        allowNull: true, // Uniquement pour l'administrateur
+        allowNull: false,
+      },
+      role: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        defaultValue: 'user',
+        validate: {
+          isIn: [['admin', 'user']],
+        },
       },
       createdAt: {
         type: Sequelize.DATE,
