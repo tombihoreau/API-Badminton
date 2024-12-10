@@ -341,7 +341,7 @@ Les mots de passe sont stockés de manière sécurisée (hachés et salés) dans
 * **Protection contre les attaques par force brute** : Implémentation de stratégies pour sécuriser les logins et prévenir les attaques par force brute. [OWASP Brute Force Protection]()
 * **Rate Limiting** : Mise en œuvre de la limitation du taux de requêtes pour éviter les abus et protéger les ressources des serveurs. [Express-rate-limit](https://www.npmjs.com/package/express-rate-limit) pour Node.js.
 * **White-list / Black-list** : Implémentation de listes blanches et noires pour contrôler l'accès aux ressources, en autorisant uniquement certaines adresses IP ou utilisateurs.
-* **Gestion des Secrets / Variables d’Environnement** : Pour une gestion sécurisée des variables d'environnement et des secrets dans des applications Node.js. Utilisation d'outils comme [dotenv](https://www.npmjs.com/package/dotenv) et [Vault]().
+* **Gestion des Secrets / Variables d’Environnement** : Pour une gestion sécurisée des variables d'environnement et des secrets dans des applications Node.js. Utilisation d'outils comme [dotenv](https://www.npmjs.com/package/dotenv).
 * **Node.js Process Management** : Gestion des processus Node.js via des outils comme [PM2](), un gestionnaire de processus permettant de maintenir les applications Node en fonctionnement continu, même après un crash.
 
 ## Contributeurs
