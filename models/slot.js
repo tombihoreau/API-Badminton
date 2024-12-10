@@ -26,5 +26,10 @@ module.exports = (sequelize) => {
     }
   });
 
+  Slot.associate = (models) => {
+    Slot.belongsTo(models.Field, { foreignKey: 'fieldId', as: 'field' });
+    Slot.hasMany(models.Reservation, { foreignKey: 'slotId', as: 'reservations' });
+  };
+
   return Slot;
 };
