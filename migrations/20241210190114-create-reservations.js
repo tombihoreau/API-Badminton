@@ -1,8 +1,11 @@
 'use strict';
 
+/** @type {import('sequelize-cli').Migration} */
+"use strict";
+
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Reservations', {
+    await queryInterface.createTable("Reservations", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -12,31 +15,21 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users',
-          key: 'id',
+          model: "Users",
+          key: "id",
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-      },
-      fieldId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Fields',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       slotId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Slots',
-          key: 'id',
+          model: "Slots",
+          key: "id",
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       date: {
         type: Sequelize.DATEONLY,
@@ -61,6 +54,7 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Reservations');
+    await queryInterface.dropTable("Reservations");
   },
 };
+

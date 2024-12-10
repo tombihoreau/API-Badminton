@@ -94,16 +94,54 @@ docker-compose down
 
 ```
 
-6. **Accès à l'application:**
+6. **Migration et Seed de la Base de Données**
+
+   Les migrations ne sont pas automatiquement exécutées avec `docker-compose up`, donc vous devez les exécuter manuellement. Suivez les étapes ci-dessous pour migrer et remplir la base de données avec les données nécessaires.
+
+   ##### Connectez-vous à votre conteneur de l'API avec Docker
+
+   Ouvrez un nouveau terminal et connectez-vous à votre conteneur de l'API avec la commande suivante :
+
+
+   ```bash
+
+   docker exec -it api-badminton-api sh
+
+   ```
+
+   Cela vous permettra d'exécuter des commandes à l'intérieur du conteneur.
+
+   ##### **Exécutez les migrations**
+
+   Une fois dans le conteneur, exécutez les migrations avec la commande suivante :
+
+   ```bash
+
+   npx sequelize-cli db:migrate
+   #Cela appliquera les migrations de la base de données et mettra à jour la structure des tables.
+   ```
+
+   ##### **Seed de la base de données**
+
+   Ajouter des données de seed
+   Après avoir exécuté les migrations, vous pouvez remplir votre base de données avec des données de test en exécutant la commande suivante :
+
+   ```bash
+
+   npx sequelize-cli db:seed:all
+   #Cela ajoutera les données de test définies dans vos fichiers de seed à la base de données.
+
+   ```
+7. **Accès à l'application:**
 
 Une fois que les conteneurs sont lancés avec Docker Compose, vous pouvez accéder aux différents services comme suit :
 
 - **API** : L'API sera disponible à l'adresse [http://localhost:3000](http://localhost:3000).
 - **Adminer** : Adminer, une interface web pour gérer la base de données, sera disponible à l'adresse [http://localhost:8080](http://localhost:8080)
 
-7. **Connexion à Adminer:**
+8. **Connexion à Adminer**
 
-   Pour vous connecter à la base de données MySQL via Adminer, entrez les informations suivantes dans le formulaire de conn
+Pour vous connecter à la base de données MySQL via Adminer, entrez les informations suivantes dans le formulaire de conn
 
 - **Serveur** : `db` (nom du service dans Docker Compose)
 - **Nom d'utilisateur** : `user`

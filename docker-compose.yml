@@ -19,7 +19,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
-    command: ["sh", "-c", "sleep 5 && npx sequelize-cli db:migrate && npx nodemon ./bin/www"]
+    command: ["sh", "-c", "sleep 5 && npx nodemon ./bin/www"]
     volumes:
       - ./config:/usr/src/app/config
       - .:/usr/src/app
