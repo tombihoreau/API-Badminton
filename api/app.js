@@ -7,6 +7,8 @@ require('dotenv').config()
 const sequelize = require('./database/sequelize'); 
 //Importer les routers
 const routerAuth = require('./routes/authentification');
+const routerFields = require('./routes/fields');
+const routerReservations = require('./routes/reservations');
 
 
 var app = express();
@@ -47,7 +49,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Bienvenue sur l\'API Badminton!' });
 });
 
-app.use(routerAuth);
+app.use(routerAuth, routerFields, routerReservations);
 
 
 // catch 404 and forward to error handler
