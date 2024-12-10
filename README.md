@@ -131,6 +131,9 @@ docker-compose down
    npx sequelize-cli db:seed:all
    #Cela ajoutera les données de test définies dans vos fichiers de seed à la base de données.
 
+   #Utilitaire pour supprimer les données présentes
+   npx sequelize-cli db:seed:undo:all
+
    ```
 7. **Accès à l'application:**
 

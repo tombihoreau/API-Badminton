@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -9,10 +9,28 @@ module.exports = {
     const slotDuration = 45; // in minutes
     const terrains = ["A", "B", "C", "D"];
 
-    // Calcule le nombre de creneau pour les 6 prochains jours
-    const startDate = new Date(); 
-    const endDate = new Date(); 
+    // Calcule le nombre de créneaux pour les 6 prochains jours
+    const startDate = new Date();
+    const endDate = new Date();
     endDate.setDate(startDate.getDate() + (6 - startDate.getDay()));
+
+    // Récupère les ids des terrains "A", "B", "C", "D"
+    const fields = await queryInterface.sequelize.query(
+      'SELECT id, name FROM `Fields` WHERE name IN (:terrains)', // Use backticks for table name
+      {
+        replacements: { terrains },
+        type: Sequelize.QueryTypes.SELECT
+      }
+    );
+    console.log(
+      "--------------------------------",
+      fields,
+      "--------------------------------"
+    );
+    const fieldsMap = fields.reduce((acc, field) => {
+      acc[field.name] = field.id;
+      return acc;
+    }, {});
 
     for (let day = startDate; day <= endDate; day.setDate(day.getDate() + 1)) {
       for (let hour = startHour; hour < endHour; hour++) {
@@ -28,7 +46,7 @@ module.exports = {
             endTime: endTime.toTimeString().slice(0, 8),
             date: day.toISOString().slice(0, 10),
             isAvailable: true,
-            fieldId: terrains.indexOf(terrain) + 1,
+            fieldId: fieldsMap[terrain], // Utilise l'id du terrain récupéré dynamiquement
             createdAt: new Date(),
             updatedAt: new Date(),
           });
@@ -40,14 +58,16 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
+    const { Op } = Sequelize;
     await queryInterface.bulkDelete("Slots", {
       date: {
         [Op.between]: [
           new Date().toISOString().slice(0, 10),
-          new Date(new Date().setDate(new Date().getDate() + 6)).toISOString().slice(0, 10),
+          new Date(new Date().setDate(new Date().getDate() + 6))
+            .toISOString()
+            .slice(0, 10),
         ],
       },
     });
   },
 };
-
