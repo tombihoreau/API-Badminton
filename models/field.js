@@ -19,5 +19,10 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING 
     },
   });
+
+  Field.associate = (models) => {
+    Field.hasMany(models.Slot, { foreignKey: 'fieldId', as: 'slots' });
+  };
+  
   return Field;
 };

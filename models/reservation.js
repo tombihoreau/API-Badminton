@@ -33,7 +33,6 @@ module.exports = (sequelize) => {
   // Associations
   Reservation.associate = (models) => {
     Reservation.belongsTo(models.User, { foreignKey: 'userId' });
-    Reservation.belongsTo(models.Field, { foreignKey: 'fieldId' });
     Reservation.belongsTo(models.Slot, { foreignKey: 'slotId' });
   };
 
