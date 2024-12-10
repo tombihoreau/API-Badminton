@@ -3,7 +3,7 @@ const router = express.Router();
 const { Reservation } = require('../../models');
 
 // Voir les réservations pour un utilisateur
-router.get('/', async (req, res) => {
+router.get('/users/:userId/reservations', async (req, res) => {
   try {
     const { userId } = req.query;
     const reservations = await Reservation.findAll({ where: { userId } });
@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
 });
 
 // Créer une réservation
-router.post('/', async (req, res) => {
+router.post('/reservations', async (req, res) => {
   try {
     const { userId, slotId, date } = req.body;
     const reservation = await Reservation.create({ userId, slotId, date });
@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
 });
 
 // Annuler une réservation
-router.delete('/:id', async (req, res) => {
+router.delete('/reservations/:id', async (req, res) => {
   try {
     const reservation = await Reservation.findByPk(req.params.id);
     if (!reservation) {

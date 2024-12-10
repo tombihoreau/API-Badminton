@@ -3,7 +3,7 @@ const router = express.Router();
 const { Field, Slot } = require('../../models');
 
 // Lister tous les terrains
-router.get('/', async (req, res) => {
+router.get('/fields', async (req, res) => {
   try {
     const fields = await Field.findAll();
     res.json(fields);
@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
 });
 
 // Voir les créneaux disponibles pour un terrain
-router.get('/:id/slots', async (req, res) => {
+router.get('/fields/:id/slots', async (req, res) => {
   try {
     const slots = await Slot.findAll({ where: { fieldId: req.params.id, isAvailable: true } });
     res.json(slots);
@@ -22,8 +22,8 @@ router.get('/:id/slots', async (req, res) => {
   }
 });
 
-// Ajouter un terrain (Admin)
-router.post('/', async (req, res) => {
+// Ajouter un terrain (Admin) ==> pas besoin cette route
+/* router.post('/fields', async (req, res) => {
   try {
     const { name, available, reasonUnavailable } = req.body;
     const field = await Field.create({ name, available, reasonUnavailable });
@@ -31,10 +31,10 @@ router.post('/', async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: 'Erreur lors de l’ajout du terrain' });
   }
-});
+}); */
 
 // Modifier un terrain (Admin)
-router.patch('/:id', async (req, res) => {
+router.patch('/fields/:id', async (req, res) => {
   try {
     const { available, reasonUnavailable } = req.body;
     const field = await Field.findByPk(req.params.id);
