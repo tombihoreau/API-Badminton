@@ -15,29 +15,37 @@ module.exports = {
           model: 'Users',
           key: 'id',
         },
+        onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      courtId: {
+      fieldId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Courts',
+          model: 'Fields',
           key: 'id',
         },
+        onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      startTime: {
-        type: Sequelize.DATE,
+      slotId: {
+        type: Sequelize.INTEGER,
         allowNull: false,
+        references: {
+          model: 'Slots',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
-      endTime: {
-        type: Sequelize.DATE,
+      date: {
+        type: Sequelize.DATEONLY,
         allowNull: false,
       },
       isCancelled: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
-        defaultValue: false, // Par défaut, une réservation n'est pas annulée
+        defaultValue: false,
       },
       createdAt: {
         type: Sequelize.DATE,
