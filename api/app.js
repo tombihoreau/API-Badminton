@@ -15,6 +15,8 @@ const routerReservations = require('./routes/reservations');
 const swaggerDocument = YAML.load(path.join(__dirname, '..', 'openapi.yaml')); 
 
 var app = express();
+const { graphqlHTTP } = require('express-graphql');
+const schema = require("./routes/graphql-route");
 
 // view engine setup
 
@@ -47,9 +49,18 @@ sequelize.authenticate()
   .then(() => console.log('La connexion à la base de données a réussi !'))
   .catch((err) => console.error('mpossible de se connecter à la base de données:', err));
 
-// Serve Swagger UI à /doc-openapi
+
+// Swagger UI pour visualiser la documentation OpenAPI
 app.use('/doc-openapi', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+//Graphql 
+app.use(
+  "/doc-graphql",
+  graphqlHTTP({
+    schema: schema,
+    graphiql: true  
+  })
+);
 
   app.get('/', (req, res) => {
     res.json({
@@ -57,7 +68,8 @@ app.use('/doc-openapi', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
       instructions: 'Cliquez sur le lien ci-dessous pour tester toutes les routes de l\'API via Swagger UI:',
       links: {
         'Swagger UI OPENAPI': 'http://localhost:3000/doc-openapi',
-        'GraphQL Playground': 'http://localhost:3000/doc-graphql'
+        'GraphQL Playground': 'http://localhost:3000/doc-graphql',
+        'Adminer Base de données': 'http://localhost:8080'
       }
     });
   });

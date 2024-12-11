@@ -136,6 +136,37 @@ paths:
         '500':
           description: Erreur serveur
 
+  /register:
+    post:
+      summary: Créer un compte utilisateur
+      description: Crée un nouveau compte utilisateur et retourne un token JWT pour les futures requêtes sécurisées.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pseudo:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Inscription réussie, retourne le token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '400':
+          description: Pseudo, mot de passe  manquant, ou pseudo déjà pris
+        '500':
+          description: Erreur serveur
+
   /fields:
     get:
       summary: Lister tous les terrains
@@ -255,7 +286,7 @@ paths:
       description: Permet de créer une réservation pour un créneau disponible. La réservation doit être dans la semaine en cours et le terrain doit être disponible.
       operationId: createReservation
       security:
-        - bearerAuth: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -294,7 +325,7 @@ paths:
       description: Permet d'annuler une réservation existante.
       operationId: cancelReservation
       security:
-        - bearerAuth: []
+        - BearerAuth: []
       parameters:
         - in: path
           name: id

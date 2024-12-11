@@ -72,13 +72,14 @@ function mapSlotResourceObject(slotData, baseURL) {
  * @param {*} baseURL URL de base pour la génération des liens
  * @returns un Ressource Object Reservation (spécification HAL)
  */
-function mapReservationResourceObject(reservationData, baseURL) {
+function mapReservationResourceObject(reservationData, baseURL, slotData) {
+  const fieldId = slotData.fieldId;
   return {
     _links: {
       self: halLinkObject(`${baseURL}/reservations/${reservationData.id}`),
-      field: halLinkObject(`${baseURL}/fields/${reservationData.fieldId}`),
+      field: halLinkObject(`${baseURL}/fields/${fieldId}`),
       slot: halLinkObject(
-        `${baseURL}/fields/${reservationData.fieldId}/slots/${reservationData.slotId}`
+        `${baseURL}/fields/${fieldId}/slots/${reservationData.slotId}`
       ),
     },
     _embedded: {
