@@ -5,7 +5,7 @@ const {
   mapFieldResourceObject,
   mapSlotResourceObject,
 } = require('../hal');
-
+const { checkAdmin } = require("../jwt");
 
 // Lister tous les terrains
 router.get("/fields", async (req, res) => {
@@ -64,7 +64,7 @@ router.get("/fields/:id", async (req, res) => {
 });
 
 // Modifier un terrain (Admin)
-router.patch("/fields/:id", async (req, res) => {
+router.patch("/fields/:id", checkAdmin, async (req, res) => { 
   const baseURL = `${req.protocol}://${req.get("host")}`;
   try {
     const { available, reasonUnavailable } = req.body;

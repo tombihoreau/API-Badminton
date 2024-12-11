@@ -54,4 +54,15 @@ function checkTokenMiddleware(req, res, next) {
   });
 }
 
-module.exports = { createJWT, checkTokenMiddleware };
+function checkAdmin(req, res, next) {
+  checkTokenMiddleware(req, res, () => {
+    if (res.locals.decodedToken && res.locals.decodedToken.isAdmin) {
+      next();
+    } else {
+      res.status(403).json({ msg: "Accès interdit, seul un administrateur peut effectuer cette action." });
+    }
+  });
+}
+
+
+module.exports = { createJWT, checkTokenMiddleware, checkAdmin };
