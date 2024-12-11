@@ -1,17 +1,115 @@
 openapi: 3.0.0
 info:
-  title: API Badminton
+  title: API de gestion des terrains et des réservations
+  description: API pour gérer les terrains, les créneaux horaires et les réservations, avec authentification via JWT.
   version: 1.0.0
-  description: API RESTful pour la gestion des terrains de badminton.
 
 servers:
-  - url: http://localhost:3000
-    description: Serveur local
+  - url: http://localhost:3000/api
+    description: Serveur local de développement
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Field:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: L'identifiant unique du terrain
+        name:
+          type: string
+          description: Le nom du terrain
+        available:
+          type: boolean
+          description: L'indication si le terrain est disponible
+        reasonUnavailable:
+          type: string
+          description: La raison de l'indisponibilité du terrain
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Slot:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: L'identifiant unique du créneau
+        startTime:
+          type: string
+          format: time
+          description: L'heure de début du créneau
+        endTime:
+          type: string
+          format: time
+          description: L'heure de fin du créneau
+        date:
+          type: string
+          format: date
+          description: La date du créneau
+        isAvailable:
+          type: boolean
+          description: L'indication si le créneau est disponible
+        fieldId:
+          type: integer
+          description: L'identifiant du terrain associé au créneau
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: L'identifiant unique de la réservation
+        userId:
+          type: integer
+          description: L'identifiant de l'utilisateur ayant fait la réservation
+        slotId:
+          type: integer
+          description: L'identifiant du créneau réservé
+        date:
+          type: string
+          format: date
+          description: La date de la réservation
+        isCancelled:
+          type: boolean
+          description: L'indication si la réservation a été annulée
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: L'identifiant unique de l'utilisateur
+        pseudo:
+          type: string
+          description: Le pseudo de l'utilisateur
+        password:
+          type: string
+          description: Le mot de passe de l'utilisateur
+        role:
+          type: string
+          description: Le rôle de l'utilisateur
+          enum: [admin, user]
+          default: user
+
+security:
+  - BearerAuth: []
 
 paths:
-  /users/register:
+  /login:
     post:
-      summary: Inscription d'un utilisateur
+      summary: Authentifier un utilisateur
+      description: Authentifie un utilisateur et retourne un token JWT pour les futures requêtes sécurisées.
+      operationId: loginUser
       requestBody:
         required: true
         content:
@@ -19,88 +117,114 @@ paths:
             schema:
               type: object
               properties:
-                username:
+                pseudo:
                   type: string
                 password:
                   type: string
-                email:
-                  type: string
-              required:
-                - username
-                - password
-                - email
-      responses:
-        '201':
-          description: Utilisateur créé
-        '400':
-          description: Erreur de validation
-
-  /users/login:
-    post:
-      summary: Authentification d'un utilisateur
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-              required:
-                - username
-                - password
       responses:
         '200':
-          description: Authentification réussie, token retourné
-        '401':
-          description: Identifiants invalides
-
-  /courts:
-    get:
-      summary: Obtenir la disponibilité des terrains
-      parameters:
-        - name: date
-          in: query
-          required: false
-          schema:
-            type: string
-            format: date
-          description: Date recherchée
-        - name: time_slot
-          in: query
-          required: false
-          schema:
-            type: string
-          description: Plage horaire recherchée
-      responses:
-        '200':
-          description: Liste des terrains disponibles
+          description: Succès de l'authentification, retourne le token
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    name:
-                      type: string
-                    status:
-                      type: string
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '400':
+          description: Pseudo ou mot de passe incorrect
+        '500':
+          description: Erreur serveur
 
-  /courts/{id}:
-    patch:
-      summary: Mettre à jour l'état d'un terrain (admin)
+  /fields:
+    get:
+      summary: Lister tous les terrains
+      description: Récupère la liste de tous les terrains disponibles.
+      operationId: getFields
+      responses:
+        '200':
+          description: Liste des terrains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      fields:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Field'
+        '500':
+          description: Erreur serveur
+
+  /fields/{id}:
+    get:
+      summary: Voir les détails d'un terrain
+      description: Récupère les détails d'un terrain par son ID.
+      operationId: getFieldById
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
           schema:
             type: integer
+          description: L'identifiant du terrain
+      responses:
+        '200':
+          description: Détails du terrain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Field'
+        '404':
+          description: Terrain non trouvé
+        '500':
+          description: Erreur serveur
+
+  /fields/{id}/slots:
+    get:
+      summary: Voir les créneaux disponibles pour un terrain
+      description: Récupère la liste des créneaux disponibles pour un terrain donné.
+      operationId: getAvailableSlots
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant du terrain
+      responses:
+        '200':
+          description: Liste des créneaux disponibles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      slots:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Slot'
+        '500':
+          description: Erreur serveur
+
+  /fields/{id}:
+    patch:
+      summary: Modifier un terrain (Admin)
+      description: Modifie la disponibilité d'un terrain et la raison de son indisponibilité. Accessible uniquement par un administrateur.
+      operationId: updateField
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant du terrain à modifier
       requestBody:
         required: true
         content:
@@ -108,22 +232,29 @@ paths:
             schema:
               type: object
               properties:
-                status:
+                available:
+                  type: boolean
+                reasonUnavailable:
                   type: string
-                  enum: [available, unavailable]
-              required:
-                - status
       responses:
         '200':
-          description: Terrain mis à jour
+          description: Terrain modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Field'
         '403':
-          description: Accès interdit (non-admin)
+          description: Accès interdit, seul un administrateur peut modifier
         '404':
           description: Terrain non trouvé
+        '500':
+          description: Erreur serveur
 
   /reservations:
     post:
       summary: Créer une réservation
+      description: Permet de créer une réservation pour un créneau disponible. La réservation doit être dans la semaine en cours et le terrain doit être disponible.
+      operationId: createReservation
       requestBody:
         required: true
         content:
@@ -131,67 +262,46 @@ paths:
             schema:
               type: object
               properties:
-                court_id:
+                userId:
                   type: integer
-                user_id:
+                slotId:
                   type: integer
                 date:
                   type: string
                   format: date
-                time_slot:
-                  type: string
-              required:
-                - court_id
-                - user_id
-                - date
-                - time_slot
       responses:
         '201':
           description: Réservation créée
-        '400':
-          description: Erreur de validation
-        '409':
-          description: Terrain déjà réservé
-
-    get:
-      summary: Lister les réservations d'un utilisateur
-      parameters:
-        - name: user_id
-          in: query
-          required: true
-          schema:
-            type: integer
-          description: ID de l'utilisateur
-      responses:
-        '200':
-          description: Liste des réservations
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    court_id:
-                      type: integer
-                    date:
-                      type: string
-                    time_slot:
-                      type: string
+                type: object
+                properties:
+                  message:
+                    type: string
+                  reservation:
+                    $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Erreur dans la création de la réservation
+        '500':
+          description: Erreur serveur
 
   /reservations/{id}:
     delete:
-      summary: Supprimer une réservation
+      summary: Annuler une réservation
+      description: Permet d'annuler une réservation existante.
+      operationId: cancelReservation
       parameters:
-        - name: id
-          in: path
+        - in: path
+          name: id
           required: true
           schema:
             type: integer
+          description: L'identifiant de la réservation à annuler
       responses:
-        '200':
-          description: Réservation supprimée
+        '204':
+          description: Réservation annulée
         '404':
           description: Réservation non trouvée
+        '500':
+          description: Erreur serveur
