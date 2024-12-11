@@ -4,11 +4,19 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config()
-
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const sequelize = require('./database/sequelize'); 
 //Importer les routers
-
+const routerAuth = require('./routes/authentification');
+const routerFields = require('./routes/fields');
+const routerReservations = require('./routes/reservations');
+// Charger la documentation OpenAPI (swagger.yaml)
+const swaggerDocument = YAML.load(path.join(__dirname, '..', 'openapi.yaml')); 
 
 var app = express();
+const { graphqlHTTP } = require('express-graphql');
+const schema = require("./routes/graphql-route");
 
 // view engine setup
 
@@ -37,7 +45,36 @@ if (process.env && process.env.ENV == 'dev') {
 }
 
 
-//Ajouter Allow-Cross-Origin-Ressource
+sequelize.authenticate()
+  .then(() => console.log('La connexion à la base de données a réussi !'))
+  .catch((err) => console.error('mpossible de se connecter à la base de données:', err));
+
+
+// Swagger UI pour visualiser la documentation OpenAPI
+app.use('/doc-openapi', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+//Graphql 
+app.use(
+  "/doc-graphql",
+  graphqlHTTP({
+    schema: schema,
+    graphiql: true  
+  })
+);
+
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'Bienvenue sur l\'API Badminton! de TOM et PRINCE',
+      instructions: 'Cliquez sur le lien ci-dessous pour tester toutes les routes de l\'API via Swagger UI:',
+      links: {
+        'Swagger UI OPENAPI': 'http://localhost:3000/doc-openapi',
+        'GraphQL Playground': 'http://localhost:3000/doc-graphql',
+        'Adminer Base de données': 'http://localhost:8080'
+      }
+    });
+  });
+app.use(routerAuth, routerFields, routerReservations);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -54,5 +91,15 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.send('Error');
 });
+
+
+
+
+var port = process.env.HOST_PORT_API || 3002; 
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+
 
 module.exports = app;

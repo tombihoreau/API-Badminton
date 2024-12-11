@@ -1,0 +1,374 @@
+openapi: 3.0.0
+info:
+  title: API de gestion des terrains et des réservations
+  description: API pour gérer les terrains, les créneaux horaires et les réservations, avec authentification via JWT.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Serveur local de développement
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Field:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: L'identifiant unique du terrain
+        name:
+          type: string
+          description: Le nom du terrain
+        available:
+          type: boolean
+          description: L'indication si le terrain est disponible
+        reasonUnavailable:
+          type: string
+          description: La raison de l'indisponibilité du terrain
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Slot:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: L'identifiant unique du créneau
+        startTime:
+          type: string
+          format: time
+          description: L'heure de début du créneau
+        endTime:
+          type: string
+          format: time
+          description: L'heure de fin du créneau
+        date:
+          type: string
+          format: date
+          description: La date du créneau
+        isAvailable:
+          type: boolean
+          description: L'indication si le créneau est disponible
+        fieldId:
+          type: integer
+          description: L'identifiant du terrain associé au créneau
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: L'identifiant unique de la réservation
+        userId:
+          type: integer
+          description: L'identifiant de l'utilisateur ayant fait la réservation
+        slotId:
+          type: integer
+          description: L'identifiant du créneau réservé
+        date:
+          type: string
+          format: date
+          description: La date de la réservation
+        isCancelled:
+          type: boolean
+          description: L'indication si la réservation a été annulée
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: L'identifiant unique de l'utilisateur
+        pseudo:
+          type: string
+          description: Le pseudo de l'utilisateur
+        password:
+          type: string
+          description: Le mot de passe de l'utilisateur
+        role:
+          type: string
+          description: Le rôle de l'utilisateur
+          enum: [admin, user]
+          default: user
+
+security:
+  - BearerAuth: []
+
+paths:
+  /login:
+    post:
+      summary: Authentifier un utilisateur
+      description: Authentifie un utilisateur et retourne un token JWT pour les futures requêtes sécurisées.
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pseudo:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Succès de l'authentification, retourne le token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '400':
+          description: Pseudo ou mot de passe incorrect
+        '500':
+          description: Erreur serveur
+
+  /register:
+    post:
+      summary: Créer un compte utilisateur
+      description: Crée un nouveau compte utilisateur et retourne un token JWT pour les futures requêtes sécurisées.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pseudo:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Inscription réussie, retourne le token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '400':
+          description: Pseudo, mot de passe  manquant, ou pseudo déjà pris
+        '500':
+          description: Erreur serveur
+
+  /fields:
+    get:
+      summary: Lister tous les terrains
+      description: Récupère la liste de tous les terrains disponibles.
+      operationId: getFields
+      responses:
+        '200':
+          description: Liste des terrains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      fields:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Field'
+        '500':
+          description: Erreur serveur
+
+  /fields/{id}:
+    get:
+      summary: Voir les détails d'un terrain
+      description: Récupère les détails d'un terrain par son ID.
+      operationId: getFieldById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant du terrain
+      responses:
+        '200':
+          description: Détails du terrain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Field'
+        '404':
+          description: Terrain non trouvé
+        '500':
+          description: Erreur serveur
+    patch:
+      summary: Modifier un terrain (Admin)
+      description: Modifie la disponibilité d'un terrain et la raison de son indisponibilité. Accessible uniquement par un administrateur.
+      operationId: updateField
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant du terrain à modifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                available:
+                  type: boolean
+                reasonUnavailable:
+                  type: string
+      responses:
+        '200':
+          description: Terrain modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Field'
+        '403':
+          description: Accès interdit, seul un administrateur peut modifier
+        '404':
+          description: Terrain non trouvé
+        '500':
+          description: Erreur serveur
+
+  /fields/{id}/slots:
+    get:
+      summary: Voir les créneaux disponibles pour un terrain
+      description: Récupère la liste des créneaux disponibles pour un terrain donné.
+      operationId: getAvailableSlots
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant du terrain
+      responses:
+        '200':
+          description: Liste des créneaux disponibles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      slots:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Slot'
+        '500':
+          description: Erreur serveur
+
+
+  /reservations:
+    post:
+      summary: Créer une réservation
+      description: Permet de créer une réservation pour un créneau disponible. La réservation doit être dans la semaine en cours et le terrain doit être disponible.
+      operationId: createReservation
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slotId:
+                  type: integer
+                date:
+                  type: string
+                  format: date
+              required:
+                - slotId
+                - date
+      responses:
+        '201':
+          description: Réservation créée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  reservation:
+                    $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Erreur dans la création de la réservation
+        '500':
+          description: Erreur serveur
+
+  /reservations/{id}:
+    delete:
+      summary: Annuler une réservation
+      description: Permet d'annuler une réservation existante.
+      operationId: cancelReservation
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant de la réservation à annuler
+      responses:
+        '204':
+          description: Réservation annulée
+        '404':
+          description: Réservation non trouvée
+        '500':
+          description: Erreur serveur
+          
+  /users/{userId}/reservations:
+    get:
+      summary: Voir les réservations d'un utilisateur
+      description: Récupère la liste des réservations d'un utilisateur donné.
+      operationId: getUserReservations
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant de l'utilisateur
+      responses:
+        '200':
+          description: Liste des réservations de l'utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      reservations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Utilisateur non trouvé
+        '500':
+          description: Erreur serveur
