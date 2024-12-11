@@ -2,10 +2,10 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const { User } = require("../../models"); // Modèle Sequelize
 const { createJWT } = require("../jwt");
-
+const loginRateLimiter = require("../rateLimiter");
 const router = express.Router();
 
-router.post("/login", async (req, res) => {
+router.post("/login", loginRateLimiter, async (req, res) => {
   const { pseudo, password } = req.body;
 
   if (!pseudo || !password) {
