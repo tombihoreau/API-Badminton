@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:3000
     description: Serveur local de développement
 
 components:
@@ -182,38 +182,6 @@ paths:
           description: Terrain non trouvé
         '500':
           description: Erreur serveur
-
-  /fields/{id}/slots:
-    get:
-      summary: Voir les créneaux disponibles pour un terrain
-      description: Récupère la liste des créneaux disponibles pour un terrain donné.
-      operationId: getAvailableSlots
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: integer
-          description: L'identifiant du terrain
-      responses:
-        '200':
-          description: Liste des créneaux disponibles
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  _embedded:
-                    type: object
-                    properties:
-                      slots:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Slot'
-        '500':
-          description: Erreur serveur
-
-  /fields/{id}:
     patch:
       summary: Modifier un terrain (Admin)
       description: Modifie la disponibilité d'un terrain et la raison de son indisponibilité. Accessible uniquement par un administrateur.
@@ -250,11 +218,44 @@ paths:
         '500':
           description: Erreur serveur
 
+  /fields/{id}/slots:
+    get:
+      summary: Voir les créneaux disponibles pour un terrain
+      description: Récupère la liste des créneaux disponibles pour un terrain donné.
+      operationId: getAvailableSlots
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant du terrain
+      responses:
+        '200':
+          description: Liste des créneaux disponibles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      slots:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Slot'
+        '500':
+          description: Erreur serveur
+
+
   /reservations:
     post:
       summary: Créer une réservation
       description: Permet de créer une réservation pour un créneau disponible. La réservation doit être dans la semaine en cours et le terrain doit être disponible.
       operationId: createReservation
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -262,13 +263,14 @@ paths:
             schema:
               type: object
               properties:
-                userId:
-                  type: integer
                 slotId:
                   type: integer
                 date:
                   type: string
                   format: date
+              required:
+                - slotId
+                - date
       responses:
         '201':
           description: Réservation créée
@@ -291,6 +293,8 @@ paths:
       summary: Annuler une réservation
       description: Permet d'annuler une réservation existante.
       operationId: cancelReservation
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -303,5 +307,37 @@ paths:
           description: Réservation annulée
         '404':
           description: Réservation non trouvée
+        '500':
+          description: Erreur serveur
+          
+  /users/{userId}/reservations:
+    get:
+      summary: Voir les réservations d'un utilisateur
+      description: Récupère la liste des réservations d'un utilisateur donné.
+      operationId: getUserReservations
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+          description: L'identifiant de l'utilisateur
+      responses:
+        '200':
+          description: Liste des réservations de l'utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      reservations:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Utilisateur non trouvé
         '500':
           description: Erreur serveur

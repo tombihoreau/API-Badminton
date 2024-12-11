@@ -26,7 +26,7 @@ router.post("/login", async (req, res) => {
     }
 
     // Générer un JWT
-    const token = createJWT(user.pseudo, user.role === "admin");
+    const token = createJWT(user.pseudo, user.role);
 
     // Retourner le JWT
     res.status(200).json({ access_token: token });

@@ -4,12 +4,15 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 require('dotenv').config()
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 const sequelize = require('./database/sequelize'); 
 //Importer les routers
 const routerAuth = require('./routes/authentification');
 const routerFields = require('./routes/fields');
 const routerReservations = require('./routes/reservations');
-
+// Charger la documentation OpenAPI (swagger.yaml)
+const swaggerDocument = YAML.load(path.join(__dirname, '..', 'openapi.yaml')); 
 
 var app = express();
 
@@ -44,11 +47,20 @@ sequelize.authenticate()
   .then(() => console.log('La connexion à la base de données a réussi !'))
   .catch((err) => console.error('mpossible de se connecter à la base de données:', err));
 
+// Serve Swagger UI à /doc-openapi
+app.use('/doc-openapi', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Bienvenue sur l\'API Badminton!' });
-});
 
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'Bienvenue sur l\'API Badminton! de TOM et PRINCE',
+      instructions: 'Cliquez sur le lien ci-dessous pour tester toutes les routes de l\'API via Swagger UI:',
+      links: {
+        'Swagger UI OPENAPI': 'http://localhost:3000/doc-openapi',
+        'GraphQL Playground': 'http://localhost:3000/doc-graphql'
+      }
+    });
+  });
 app.use(routerAuth, routerFields, routerReservations);
 
 

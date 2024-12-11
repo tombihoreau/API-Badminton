@@ -6,7 +6,7 @@ const {
   mapReservationResourceObject,
   mapUserReservationsResourceObject,
 } = require("../hal");
-
+const { checkTokenMiddleware } = require("../jwt");
 
 // Voir les réservations pour un utilisateur
 router.get("/users/:userId/reservations", async (req, res) => {
@@ -26,10 +26,11 @@ router.get("/users/:userId/reservations", async (req, res) => {
 });
 
 // Créer une réservation
-router.post("/reservations", async (req, res) => {
+router.post("/reservations", checkTokenMiddleware, async (req, res) => {
   const baseURL = `${req.protocol}://${req.get("host")}`;
   try {
-    const { userId, slotId, date } = req.body;
+    const { id: userId } = res.locals.decodedToken;
+    const { slotId, date } = req.body;
 
     // 1. Vérification de l'utilisateur
     if (!userId) {
@@ -90,9 +91,17 @@ router.post("/reservations", async (req, res) => {
 });
 
 // Annuler une réservation
-router.delete("/reservations/:id", async (req, res) => {
+router.delete("/reservations/:id", checkTokenMiddleware, async (req, res) => {
   try {
-    const reservation = await Reservation.findByPk(req.params.id);
+    const { id: userId } = res.locals.decodedToken;
+    const reservation = await Reservation.findOne({
+      where: { id: req.params.id, userId },
+    });
+
+    if (!reservation) {
+      return res.status(404).json({ error: "Réservation non trouvée" });
+    }
+    //const reservation = await Reservation.findByPk(req.params.id);
     if (!reservation) {
       return res.status(404).json({ error: "Réservation non trouvée" });
     }
@@ -112,11 +121,9 @@ router.delete("/reservations/:id", async (req, res) => {
     await reservation.destroy();
     res.status(204).send();
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error: "Erreur serveur lors de la suppression de la réservation.",
-      });
+    res.status(500).json({
+      error: "Erreur serveur lors de la suppression de la réservation.",
+    });
   }
 });
 

@@ -15,12 +15,8 @@ try {
 }
 
 // Fonction pour créer un JWT
-function createJWT(login, isAdmin) {
-  return jwt.sign(
-    { login, isAdmin },
-    secret,
-    { expiresIn: expires }
-  );
+function createJWT(login, role) {
+  return jwt.sign({ login, role}, secret, { expiresIn: expires });
 }
 
 // Fonction pour extraire le token du header
@@ -56,13 +52,17 @@ function checkTokenMiddleware(req, res, next) {
 
 function checkAdmin(req, res, next) {
   checkTokenMiddleware(req, res, () => {
-    if (res.locals.decodedToken && res.locals.decodedToken.isAdmin) {
+    const { role } = res.locals.decodedToken;
+    if (role === "admin") {
       next();
     } else {
-      res.status(403).json({ msg: "Accès interdit, seul un administrateur peut effectuer cette action." });
+      res
+        .status(403)
+        .json({
+          msg: "Accès interdit, seul un administrateur peut effectuer cette action.",
+        });
     }
   });
 }
-
 
 module.exports = { createJWT, checkTokenMiddleware, checkAdmin };
