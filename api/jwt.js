@@ -15,8 +15,8 @@ try {
 }
 
 // Fonction pour créer un JWT
-function createJWT(login, role) {
-  return jwt.sign({ login, role}, secret, { expiresIn: expires });
+function createJWT(login, role , userId) {
+  return jwt.sign({ login, role, userId}, secret, { expiresIn: expires });
 }
 
 // Fonction pour extraire le token du header
