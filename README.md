@@ -155,14 +155,16 @@ Pour vous connecter à la base de données MySQL via Adminer, entrez les informa
 
 ## Ressources
 
-| Ressource               |              URL              | Méthodes HTTP | Paramètres d’URL/Variations                           | Qui peut faire ça               | Commentaires                                                                             |
-| ----------------------- | :----------------------------: | -------------- | ------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- |
-| Authentification        |        `/auth/login`        | `POST`       | Aucune                                                  | Administrateur·ice              | Permet à un administrateur·ice de se connecter pour gérer les ressources protégées. |
-| Liste des créneaux     |      `/slots/available`      | `GET`        | `date` (ex. `2024-11-27`), `terrain` (A, B, C, D) | Tout utilisateur                 | Récupère les créneaux disponibles pour une date et un terrain spécifiques.           |
-| Réservation            |       `/reservations`       | `POST`       | Aucune                                                  | Tout utilisateur                 | Permet de créer une réservation en fournissant un pseudo et les détails du créneau.  |
-| Annulation              |     `/reservations/{id}`     | `DELETE`     | `{id}` : Identifiant unique de la réservation        | Tout utilisateur                 | Permet d'annuler une réservation existante.                                             |
-| Rendre terrain indispo  | `/terrains/{id}/unavailable` | `PATCH`      | `{id}` : Identifiant du terrain (A, B, C, D)          | Administrateur·ice              | Rend un terrain indisponible pour une période donnée. Protégé par authentification.  |
-| Liste des réservations |       `/reservations`       | `GET`        | `date` (optionnel), `terrain` (optionnel)           | Administrateur·ice, utilisateur | Permet de lister les réservations existantes.                                           |
+| Ressource                                |               URL               | Méthodes HTTP | Paramètres d’URL/Variations                    | Qui peut faire ça                                       | Commentaires                                                                                                 |
+| ---------------------------------------- | :-----------------------------: | -------------- | ------------------------------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Authentification                         |           `/login`           | `POST`       | Aucun                                            | Administrateur·ice                                      | Permet à un administrateur·ice de se connecter pour gérer les ressources protégées.                     |
+| Création de compte                      |          `/register`          | `POST`       | Aucun                                            | Tout utilisateur                                         |                                                                                                              |
+| Liste des créneaux d'un terrain         |      `/fields/:id/slots`      | `GET`        | <br /> {id} : Identifiant du                    | Tout utilisateur                                         | Récupère les créneaux disponibles pour une date et un terrain spécifiques.                               |
+| Réservation                             |        `/reservations`        | `POST`       | Aucun                                            | Tout utilisateur connecté ( pour savoir qui a reservé) | Permet de créer une réservation en fournissant un pseudo (en etant connecté) et les détails du créneau. |
+| Annulation                               |     `/reservations/{id}`     | `DELETE`     | `{id}` : Identifiant unique de la réservation | Tout utilisateur                                         | Permet d'annuler une réservation existante.                                                                 |
+| Rendre terrain indispo ou dispo          |           /fields/:id           | `PATCH`      | `{id}` : Identifiant du terrain               | Administrateur·ice                                      | Rend un terrain indisponible pour une période donnée. Protégé par authentification.                      |
+| Liste des réservations                  |        `/reservations`        | `GET`        | <br /> Aucun                                     | Administrateur·ice                                      | Permet de lister les réservations existantes.                                                               |
+| Liste des réservations d'un utilisateur | `/users/:userId/reservations` | `GET`        | Aucun                                            | Tout utilisateur                                         | Permet de lister les réservations existantes d'un utilisateur.                                              |
 
 ## Utiliser le service :  cas nominal
 
@@ -206,7 +208,7 @@ Pour vous connecter à la base de données MySQL via Adminer, entrez les informa
 
 ```json
 {
-    "terrain": "B"
+    "terrain_id": "exemple id "
 }
 ```
 
@@ -214,7 +216,7 @@ Pour vous connecter à la base de données MySQL via Adminer, entrez les informa
 
 ```json
 {
-    "message": "Le terrain B est maintenant indisponible."
+    "message": "Le terrain  est maintenant indisponible."
 }
 ```
 
@@ -222,49 +224,52 @@ Pour vous connecter à la base de données MySQL via Adminer, entrez les informa
 
 **1. Lister les créneaux disponibles d'un terrain :**
 
-Envoyer une requête `GET` à l'URL `/slots/available?date=2024-11-27&terrain=A`.
+Envoyer une requête `GET` à l'URL  /fields/:id/slots.
 
 ```bash
-#les paramètres à utiliser sont :
 
-#======= date
-#======= terrain
+#======= présicer l'id du terrain
+
 ```
 
 **Réponse attendue :**
 
 ```json
-[
-    {
-        "time": "10:00",
-        "isAvailable": true
-    },
-    {
-        "time": "10:45",
-        "isAvailable": false
-    }
-]
+// ========= Ceci est un exemple 
+{
+  "_embedded": {
+    "slots": [
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost:3000/fields/14/slots/3",
+            "templated": false
+          }
+        },
+    ]
+  }
+}
 
 ```
 
 **2. Réserver un terrain :**
 
-Envoyer une requête `POST` à l'URL `/reservations` avec les informations nécessaires.
+Envoyer une requête `POST` à l'URL `/reservations` avec les informations nécessaires .
+NB: Il faut être connecté pour cela
 
 **Exemple :**
 
 ```json
 {
-    "username": "player1",
-    "date": "2024-11-27",
-    "terrain": "A",
-    "time": "10:00"
+  "slotId": 0,
+  "date": "2024-12-11"
 }
 ```
 
 **Réponse attendue :**
 
 ```json
+//========== Ceci est exemple 
 {
     "message": "Réservation réussie pour le terrain A le 27 novembre 2024 à 10h00."
 }
@@ -273,10 +278,10 @@ Envoyer une requête `POST` à l'URL `/reservations` avec les informations néce
 **5 . Annuler une réservation :**
 
 * **But** : Annuler une réservation existante.
-* **Préconditions** : L'utilisateur doit disposer d'une réservation à annuler.
+* **Préconditions** : L'utilisateur doit disposer d'une réservation à annuler et être connecté.
 * **Étapes** :
 
-  1. L'utilisateur envoie une requête `DELETE` à l'URL `/reservations/{reservation_id}` avec l'ID de la réservation à annuler.
+  1. L'utilisateur envoie une requête `DELETE` à l'URL `/reservations/:id ` avec l'ID de la réservation à annuler.
   2. L'API confirme l'annulation.
 
 **Exemple :**
@@ -301,15 +306,20 @@ Réponse attendue
 
 | **Nom de la donnée** | **Type**    | **Description**                                                                | **Contraintes**                                                          |
 | --------------------------- | ----------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| **username**          | `string`        | Le pseudo de l'utilisateur ou de l'administrateur.                                   | Obligatoire pour s'identifier. Longueur entre 3 et 20 caractères.             |
+| **pseudo**            | `string`        | Le pseudo de l'utilisateur ou de l'administrateur.                                   | Obligatoire pour s'identifier. Doit être unique                              |
 | **password**          | `string`        | Le mot de passe de l'utilisateur ou administrateur (lors de la connexion).           | Obligatoire lors de la connexion, doit être sécurisé.                       |
+| **role**              | `enum`          | Role de l'utilisateur                                                                | Doit être user ou admin                                                       |
 | **date**              | `string` (date) | La date de la réservation ou de la disponibilité.                                  | Doit être au format `YYYY-MM-DD`.                                           |
-| **terrain**           | `string`        | Le nom du terrain réservé ou à rendre indisponible.                               | Doit être une des valeurs suivantes :`A`, `B`, `C`, `D`.              |
+| **name(terrain)**     | `string`        | Le nom du terrain réservé ou à rendre indisponible.                               | Doit être une des valeurs suivantes :`A`, `B`, `C`, `D`.              |
 | **time**              | `string` (time) | L'heure du créneau réservé.                                                       | Doit être au format `HH:mm`.                                                |
-| **reservation_id**    | `integer`       | L'identifiant de la réservation.                                                    | Doit être unique pour chaque réservation.                                    |
+| **reservationId**     | `integer`       | L'identifiant de la réservation.                                                    | Doit être unique pour chaque réservation.                                    |
+| **slotId**            | `integer`       | L'identifiant du creneau                                                             | Doit être unique                                                              |
+| **fieldId**           | `integer`       | L'identifiant du terrain                                                             | Doit être unique                                                              |
+| **userId**            | `integer`       | L'identifiant de l'utilisateur                                                       | Doit être unique                                                              |
 | **access_token**      | `string`        | Le jeton JWT utilisé pour authentifier un administrateur.                           | Obligatoire pour les actions administratives, valide pendant un certain temps. |
 | **isAvailable**       | `boolean`       | Indique si un créneau est disponible ou non.                                        | `true` si disponible, `false` si non.                                      |
-| **terrainStatus**     | `string`        | L'état d'un terrain : disponible, indisponible.                                     | Peut être `available` ou `unavailable`.                                   |
+| **available**         | `string`        | L'état d'un terrain : disponible, indisponible.                                     | Peut être `available` ou `unavailable`.                                   |
+| **reasonUnavailable** | `string`        | Raison de l'indisponibilité                                                         | Est un string                                                                  |
 | **createdAt**         | `datetime`      | Date et heure de la création de la réservation ou de la modification d'un terrain. | Automatiquement généré par le système lors de la création.                |
 | **updatedAt**         | `datetime`      | Date et heure de la dernière modification.                                          | Automatiquement généré par le système lors de la modification.             |
 
@@ -321,17 +331,6 @@ Réponse attendue
 - **Type** : Le type de la donnée, comme `string`, `boolean`, `integer`, `datetime`, etc.
 - **Description** : Une brève description du rôle ou de l'objectif de la donnée dans l'API ou le système.
 - **Contraintes** : Les restrictions, règles ou formats que la donnée doit respecter pour être valide. Cela inclut des informations sur la longueur des chaînes de caractères, le format des dates, ou des valeurs acceptées.
-
-#### Tableau récapitulatif
-
-| Ressource               |              URL              | Méthodes HTTP | Paramètres d’URL/Variations                           | Qui peut faire ça               | Commentaires                                                                             |
-| ----------------------- | :----------------------------: | -------------- | ------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- |
-| Authentification        |        `/auth/login`        | `POST`       | Aucune                                                  | Administrateur·ice              | Permet à un administrateur·ice de se connecter pour gérer les ressources protégées. |
-| Liste des créneaux     |      `/slots/available`      | `GET`        | `date` (ex. `2024-11-27`), `terrain` (A, B, C, D) | Tout utilisateur                 | Récupère les créneaux disponibles pour une date et un terrain spécifiques.           |
-| Réservation            |       `/reservations`       | `POST`       | Aucune                                                  | Tout utilisateur                 | Permet de créer une réservation en fournissant un pseudo et les détails du créneau.  |
-| Annulation              |     `/reservations/{id}`     | `DELETE`     | `{id}` : Identifiant unique de la réservation        | Tout utilisateur                 | Permet d'annuler une réservation existante.                                             |
-| Rendre terrain indispo  | `/terrains/{id}/unavailable` | `PATCH`      | `{id}` : Identifiant du terrain (A, B, C, D)          | Administrateur·ice              | Rend un terrain indisponible pour une période donnée. Protégé par authentification.  |
-| Liste des réservations |       `/reservations`       | `GET`        | `date` (optionnel), `terrain` (optionnel)           | Administrateur·ice, utilisateur | Permet de lister les réservations existantes.                                           |
 
 ## Sécurité
 
@@ -363,6 +362,14 @@ Par exemple, la réservation d'un terrain est autorisée pour tous les utilisate
 ##### 6. Chiffrement des mots de passe
 
 Les mots de passe sont stockés de manière sécurisée (hachés et salés) dans la base de données. Même si la base de données est compromise, les mots de passe restent protégés.
+
+##### 7. **Mise en place du rate-limiting pour sécuriser les tentatives d'authentification**
+
+Afin de protéger l'application contre les attaques par  **brute-force** , nous avons mis en place un mécanisme de **rate-limiting** pour limiter le nombre de tentatives de connexion sur une période donnée. Cela empêche les attaquants de tenter de deviner les informations d'identification de l'administrateur en effectuant trop de tentatives consécutives. Par exemple, un utilisateur est limité à 5 tentatives de connexion par adresse IP toutes les 15 minutes. Un message d'erreur spécifique est renvoyé lorsque la limite est dépassée, assurant une meilleure protection contre les attaques par  **brute-force** .
+
+##### 8. **Implémentation de garde-fous dans les routes sensibles**
+
+Des garde-fous ont été ajoutés dans les routes sensibles pour assurer que les utilisateurs ne peuvent pas réserver un créneau qui est déjà **indisponible** ou effectuer des actions sur des terrains  **invalides** . Ce mécanisme de validation vérifie que les données envoyées par les utilisateurs respectent les critères définis (par exemple, vérification de la disponibilité des créneaux, validation des ID de terrain, etc.). Cela permet de garantir l'intégrité des données et de prévenir toute tentative de manipulation des utilisateurs non autorisés ou de mauvaises pratiques.
 
 ## Remarques
 
